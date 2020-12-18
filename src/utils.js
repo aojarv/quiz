@@ -1,7 +1,7 @@
 import axios from 'axios';
 
 export const getQuestions = () => {
-	const url = 'http://oop-harkka.herokuapp.com/api/questions';
+	const url = 'https://oop-harkka.herokuapp.com/api/questions';
 	return axios
 		.get(url)
 		.then((res) => {
@@ -15,14 +15,14 @@ export const getQuestions = () => {
 };
 
 export const getTopTen = () => {
-	const url = 'http://oop-harkka.herokuapp.com/api/scoreboard';
+	const url = 'https://oop-harkka.herokuapp.com/api/scoreboard';
 	return axios.get(url).then((res) => {
 		return res.data;
 	});
 };
 
 export const updateTopTen = ({ obj }) => {
-	const url = 'http://oop-harkka.herokuapp.com/api/addscore';
+	const url = 'https://oop-harkka.herokuapp.com/api/addscore';
 	console.log(obj);
 	return axios.post(url, obj).then((res) => {
 		return res.data;
