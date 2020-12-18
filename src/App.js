@@ -1,10 +1,9 @@
 import React from 'react';
-import { Grid, TextField } from '@material-ui/core';
-import axios from 'axios';
+import { Grid } from '@material-ui/core';
 
 import styled from 'styled-components';
 import { AnswerQuestions, AskName, ShowScoreboard } from './components';
-import { getNextQuestion, getTopTen } from './utils';
+import { getQuestions, getTopTen } from './utils';
 
 const Container = styled(({ ...other }) => <Grid container={true} {...other} />)``;
 
@@ -16,6 +15,21 @@ const App = () => {
 	const [ name, setName ] = React.useState('');
 	const [ questionsAnswered, setQuestionsAnswered ] = React.useState(0);
 	const [ score, setScore ] = React.useState(0);
+	const [ questions, setQuestions ] = React.useState([]);
+	const [ scores, setScores ] = React.useState([]);
+
+	React.useEffect(() => {
+		const fetchData = async () => {
+			const temp = await getQuestions();
+			setQuestions(temp);
+		};
+		const fetchScoreData = async () => {
+			const temp2 = await getTopTen();
+			setScores(temp2);
+		};
+		fetchData();
+		fetchScoreData();
+	}, []);
 
 	return (
 		<React.Fragment>
@@ -41,21 +55,23 @@ const App = () => {
 						<AskName name={name} setName={setName} setQuizState={setQuizState} />
 					) : quizState === 'answerQuestions' ? (
 						<AnswerQuestions
+							data={questions}
 							setQuizState={setQuizState}
 							questionsAnswered={questionsAnswered}
 							setQuestionsAnswered={setQuestionsAnswered}
 							score={score}
 							setScore={setScore}
-							getNextQuestion={getNextQuestion}
 						/>
 					) : quizState === 'showScoreboard' ? (
 						<ShowScoreboard
+							scores={scores}
 							name={name}
 							setName={setName}
 							score={score}
 							setScore={setScore}
 							setQuizState={setQuizState}
-							getTopTen={getTopTen}
+							setData={setQuestions}
+							setScores={setScores}
 						/>
 					) : (
 						undefined

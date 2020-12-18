@@ -1,57 +1,37 @@
-import React from 'react';
 import axios from 'axios';
 
-export const getNextQuestion = () => {
-	return {
-		question: 'Kenellä on täällä Downin syndrooma',
-		answer1: 'Minulla',
-		answer2: 'XD',
-		answer3: 'jaa a',
-		answer4: 'työttömillä'
-	};
+export const getQuestions = () => {
+	const url = 'http://oop-harkka.herokuapp.com/api/questions';
+	return axios
+		.get(url)
+		.then((res) => {
+			//console.log(res.data);
+			return res.data;
+		})
+		.catch((error) => {
+			console.log(error);
+			return [];
+		});
 };
 
 export const getTopTen = () => {
-	return {
-		first: {
-			name: 'jamal',
-			score: 666
-		},
-		second: {
-			name: 'jamal',
-			score: 666
-		},
-		third: {
-			name: 'jamal',
-			score: 666
-		},
-		fourth: {
-			name: 'jamal',
-			score: 666
-		},
-		fifth: {
-			name: 'jamal',
-			score: 666
-		},
-		sixth: {
-			name: 'jamal',
-			score: 666
-		},
-		seventh: {
-			name: 'jamal',
-			score: 666
-		},
-		eighth: {
-			name: 'jamal',
-			score: 666
-		},
-		ninth: {
-			name: 'jamal',
-			score: 666
-		},
-		tenth: {
-			name: 'jamal',
-			score: 666
-		}
-	};
+	const url = 'http://oop-harkka.herokuapp.com/api/scoreboard';
+	return axios.get(url).then((res) => {
+		return res.data;
+	});
+};
+
+export const updateTopTen = ({ obj }) => {
+	const url = 'http://oop-harkka.herokuapp.com/api/addscore';
+	console.log(obj);
+	return axios.post(url, obj).then((res) => {
+		return res.data;
+	});
+};
+
+export const isCorrectAnswer = ({ data, questionsAnswered, index }) => {
+	if (!!data[questionsAnswered].answers[index] && !!data[questionsAnswered].correct_answer) {
+		return true;
+	}
+	return false;
 };

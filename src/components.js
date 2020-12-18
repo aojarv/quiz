@@ -1,5 +1,6 @@
 import React from 'react';
 import { Grid, TextField } from '@material-ui/core';
+import axios from 'axios';
 
 import styled from 'styled-components';
 
@@ -55,20 +56,20 @@ const Scoreboard = ({ topTen }) => {
 					</Item>
 				</Container>
 			</Item>
-			{Object.keys(topTen).map((key) => (
+			{topTen.map((item) => (
 				<Item xs={12}>
 					<Container style={{ display: 'flex', justifyContent: 'center' }}>
 						<Item
 							xs={4}
 							style={{ display: 'flex', justifyContent: 'center', margin: '0.2rem', border: '1px solid' }}
 						>
-							{topTen[key].name}
+							{item.name || '-'}
 						</Item>
 						<Item
 							xs={4}
 							style={{ display: 'flex', justifyContent: 'center', margin: '0.2rem', border: '1px solid' }}
 						>
-							{topTen[key].score}
+							{item.score.toFixed(2) || '-'}
 						</Item>
 					</Container>
 				</Item>
@@ -77,12 +78,24 @@ const Scoreboard = ({ topTen }) => {
 	);
 };
 
-export const ShowScoreboard = ({ name, setName, score, setScore, setQuizState, getTopTen }) => {
-	const [ obj, setObj ] = React.useState({});
+export const ShowScoreboard = ({ scores, name, setName, score, setScore, setQuizState, setData, setScores }) => {
+	const [ scoreData, setScoreData ] = React.useState([]);
 	// Get top 10 on scoreboard
-	React.useEffect(() => {
-		setObj(getTopTen());
-	}, []);
+	React.useEffect(
+		() => {
+			setScoreData(scores);
+			const fetchData = async () => {
+				const url = 'http://oop-harkka.herokuapp.com/api/addscore';
+				const temp = await axios.post(url, { name: name, score: score.toFixed(2) }).then((res) => {
+					return res.data;
+				});
+				console.log(temp);
+				setScoreData(temp);
+			};
+			fetchData();
+		},
+		[ name, score, scores ]
+	);
 	return (
 		<Container>
 			<Item
@@ -99,13 +112,13 @@ export const ShowScoreboard = ({ name, setName, score, setScore, setQuizState, g
 			>
 				<StyledScore>
 					{`${name}, your score is ${score.toFixed(2)}!`}
-					{score > obj.tenth.score && ` You made it to top 10!`}
+					{score > scores[9].score && ` You made it to top 10!`}
 				</StyledScore>
 			</Item>
 			<Item xs={12}>
 				<Container style={{ display: 'flex', justifyContent: 'center' }}>
 					<Item xs={6}>
-						<Scoreboard topTen={obj} />
+						<Scoreboard topTen={scoreData} />
 					</Item>
 				</Container>
 			</Item>
@@ -123,6 +136,8 @@ export const ShowScoreboard = ({ name, setName, score, setScore, setQuizState, g
 						setName('');
 						setQuizState('askName');
 						setScore(0);
+						setData([]);
+						setScores([]);
 					}}
 				>
 					Try Again
@@ -132,22 +147,8 @@ export const ShowScoreboard = ({ name, setName, score, setScore, setQuizState, g
 	);
 };
 
-export const AnswerQuestions = ({
-	setQuizState,
-	questionsAnswered,
-	setQuestionsAnswered,
-	score,
-	setScore,
-	getNextQuestion
-}) => {
+export const AnswerQuestions = ({ data, setQuizState, questionsAnswered, setQuestionsAnswered, score, setScore }) => {
 	const [ timeLeft, setTimeLeft ] = React.useState(10000);
-	const [ obj, setObj ] = React.useState({});
-	// Get first question when page reloads
-	React.useEffect(() => {
-		if (questionsAnswered === 0) {
-			setObj(getNextQuestion());
-		}
-	}, []);
 	// When 10 questions are answered, switch to scoreboard
 	React.useEffect(
 		() => {
@@ -156,20 +157,20 @@ export const AnswerQuestions = ({
 				setQuestionsAnswered(0);
 			}
 		},
-		[ questionsAnswered ]
+		[ questionsAnswered, setQuestionsAnswered, setQuizState ]
 	);
 	// timer
 	React.useEffect(
 		() => {
 			if (timeLeft === 0) {
 				setQuestionsAnswered(questionsAnswered + 1);
-				getNextQuestion();
+				//getNextQuestion();
 				setTimeLeft(10000);
 			}
 			const timer = timeLeft > 0 && setInterval(() => setTimeLeft(timeLeft - 10), 10);
 			return () => clearInterval(timer);
 		},
-		[ timeLeft ]
+		[ timeLeft, questionsAnswered, setQuestionsAnswered ]
 	);
 	return (
 		<Container>
@@ -196,47 +197,94 @@ export const AnswerQuestions = ({
 				xs={12}
 				style={{ paddingTop: '5rem', paddingBottom: '5rem', display: 'flex', justifyContent: 'center' }}
 			>
-				<StyledQuestion>{obj.question}</StyledQuestion>
+				<StyledQuestion>
+					{data && data[questionsAnswered] && data[questionsAnswered].question ? (
+						data[questionsAnswered].question
+					) : (
+						''
+					)}
+				</StyledQuestion>
 			</Item>
 			<Item xs={12}>
 				<Container style={{ display: 'flex', justifyContent: 'space-around' }}>
 					<StyledAnswer
 						onClick={() => {
+							console.log(data);
 							setQuestionsAnswered(questionsAnswered + 1);
-							setScore(score + timeLeft / 100);
+							if (
+								!!data[questionsAnswered].answers[0] &&
+								!!data[questionsAnswered].correct_answer &&
+								data[questionsAnswered].answers[0] === data[questionsAnswered].correct_answer
+							) {
+								setScore(score + timeLeft / 100);
+							}
 							setTimeLeft(10000);
 						}}
 					>
-						{obj.answer1}
+						{data && data[questionsAnswered] && data[questionsAnswered].answers[0] ? (
+							data[questionsAnswered].answers[0]
+						) : (
+							''
+						)}
 					</StyledAnswer>
 					<StyledAnswer
 						onClick={() => {
 							setQuestionsAnswered(questionsAnswered + 1);
-							setScore(score + timeLeft / 100);
+							if (
+								!!data[questionsAnswered].answers[1] &&
+								!!data[questionsAnswered].correct_answer &&
+								data[questionsAnswered].answers[1] === data[questionsAnswered].correct_answer
+							) {
+								setScore(score + timeLeft / 100);
+							}
 							setTimeLeft(10000);
 						}}
 					>
-						{obj.answer2}
+						{data && data[questionsAnswered] && data[questionsAnswered].answers[1] ? (
+							data[questionsAnswered].answers[1]
+						) : (
+							''
+						)}
 					</StyledAnswer>
 				</Container>
 				<Container style={{ display: 'flex', justifyContent: 'space-around' }}>
 					<StyledAnswer
 						onClick={() => {
 							setQuestionsAnswered(questionsAnswered + 1);
-							setScore(score + timeLeft / 100);
+							if (
+								!!data[questionsAnswered].answers[2] &&
+								!!data[questionsAnswered].correct_answer &&
+								data[questionsAnswered].answers[2] === data[questionsAnswered].correct_answer
+							) {
+								setScore(score + timeLeft / 100);
+							}
 							setTimeLeft(10000);
 						}}
 					>
-						{obj.answer3}
+						{data && data[questionsAnswered] && data[questionsAnswered].answers[2] ? (
+							data[questionsAnswered].answers[2]
+						) : (
+							''
+						)}
 					</StyledAnswer>
 					<StyledAnswer
 						onClick={() => {
 							setQuestionsAnswered(questionsAnswered + 1);
-							setScore(score + timeLeft / 100);
+							if (
+								!!data[questionsAnswered].answers[3] &&
+								!!data[questionsAnswered].correct_answer &&
+								data[questionsAnswered].answers[3] === data[questionsAnswered].correct_answer
+							) {
+								setScore(score + timeLeft / 100);
+							}
 							setTimeLeft(10000);
 						}}
 					>
-						{obj.answer4}
+						{data && data[questionsAnswered] && data[questionsAnswered].answers[3] ? (
+							data[questionsAnswered].answers[3]
+						) : (
+							''
+						)}
 					</StyledAnswer>
 				</Container>
 			</Item>
