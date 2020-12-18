@@ -17,6 +17,8 @@ const App = () => {
 	const [ score, setScore ] = React.useState(0);
 	const [ questions, setQuestions ] = React.useState([]);
 	const [ scores, setScores ] = React.useState([]);
+	const [ time, setTime ] = React.useState(3000);
+	const [ buttonDisabled, setButtonDisabled ] = React.useState(true);
 
 	React.useEffect(() => {
 		const fetchData = async () => {
@@ -52,7 +54,15 @@ const App = () => {
            * Render the app itself here: depending on quiz state either name should be asked or questions or scoreboard shown
            */}
 					{quizState === 'askName' ? (
-						<AskName name={name} setName={setName} setQuizState={setQuizState} />
+						<AskName
+							name={name}
+							setName={setName}
+							setQuizState={setQuizState}
+							buttonDisabled={buttonDisabled}
+							setButtonDisabled={setButtonDisabled}
+							time={time}
+							setTime={setTime}
+						/>
 					) : quizState === 'answerQuestions' ? (
 						<AnswerQuestions
 							data={questions}
@@ -72,6 +82,8 @@ const App = () => {
 							setQuizState={setQuizState}
 							setData={setQuestions}
 							setScores={setScores}
+							setTime={setTime}
+							setButtonDisabled={setButtonDisabled}
 						/>
 					) : (
 						undefined

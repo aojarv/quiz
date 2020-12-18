@@ -17,12 +17,21 @@ export const StyledButton = styled.a`
 	}
 `;
 
+export const StyledButtonDisabled = styled.a`
+	color: #9e9e9e;
+	font-size: 2.4rem;
+`;
+
 export const StyledPoints = styled.div`
 	color: #1f4f79;
 	font-size: 2.4rem;
 `;
 
-export const StyledQuestion = styled.span`font-size: 3rem;`;
+export const StyledQuestion = styled.span`
+	font-size: 3rem;
+	padding-right: 3rem;
+	padding-left: 3rem;
+`;
 
 export const StyledAnswer = styled.div`
 	display: flex;
@@ -78,7 +87,18 @@ const Scoreboard = ({ topTen }) => {
 	);
 };
 
-export const ShowScoreboard = ({ scores, name, setName, score, setScore, setQuizState, setData, setScores }) => {
+export const ShowScoreboard = ({
+	scores,
+	name,
+	setName,
+	score,
+	setScore,
+	setQuizState,
+	setData,
+	setScores,
+	setTime,
+	setButtonDisabled
+}) => {
 	const [ scoreData, setScoreData ] = React.useState([]);
 	// Get top 10 on scoreboard
 	React.useEffect(
@@ -138,6 +158,8 @@ export const ShowScoreboard = ({ scores, name, setName, score, setScore, setQuiz
 						setScore(0);
 						setData([]);
 						setScores([]);
+						setTime(3000);
+						setButtonDisabled(true);
 					}}
 				>
 					Try Again
@@ -292,7 +314,17 @@ export const AnswerQuestions = ({ data, setQuizState, questionsAnswered, setQues
 	);
 };
 
-export const AskName = ({ name, setName, setQuizState }) => {
+export const AskName = ({ name, setName, setQuizState, buttonDisabled, setButtonDisabled, time, setTime }) => {
+	React.useEffect(
+		() => {
+			if (time === 0) {
+				setButtonDisabled(false);
+			}
+			const timer = time > 0 && setInterval(() => setTime(time - 10), 10);
+			return () => clearInterval(timer);
+		},
+		[ time, setButtonDisabled, setTime ]
+	);
 	return (
 		<Container style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '80vh' }}>
 			<Item xs={4} style={{}}>
@@ -307,13 +339,17 @@ export const AskName = ({ name, setName, setQuizState }) => {
 						Please write your name
 					</Item>
 					<Item xs={12} style={{ display: 'flex', justifyContent: 'left', marginTop: '1rem' }}>
-						<StyledButton
-							onClick={() => {
-								setQuizState('answerQuestions');
-							}}
-						>
-							Submit
-						</StyledButton>
+						{buttonDisabled ? (
+							<StyledButtonDisabled>Submit</StyledButtonDisabled>
+						) : (
+							<StyledButton
+								onClick={() => {
+									setQuizState('answerQuestions');
+								}}
+							>
+								Submit
+							</StyledButton>
+						)}
 					</Item>
 				</Container>
 			</Item>
