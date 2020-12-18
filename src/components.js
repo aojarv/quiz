@@ -4,6 +4,8 @@ import axios from 'axios';
 
 import styled from 'styled-components';
 
+import { getQuestions, getTopTen } from './utils';
+
 const Container = styled(({ ...other }) => <Grid container={true} {...other} />)``;
 
 const Item = styled(({ ...other }) => <Grid item={true} {...other} />)``;
@@ -87,18 +89,7 @@ const Scoreboard = ({ topTen }) => {
 	);
 };
 
-export const ShowScoreboard = ({
-	scores,
-	name,
-	setName,
-	score,
-	setScore,
-	setQuizState,
-	setData,
-	setScores,
-	setTime,
-	setButtonDisabled
-}) => {
+export const ShowScoreboard = ({ scores, name, setName, score, setScore, setQuizState, setData, setScores }) => {
 	const [ scoreData, setScoreData ] = React.useState([]);
 	// Get top 10 on scoreboard
 	React.useEffect(
@@ -158,8 +149,6 @@ export const ShowScoreboard = ({
 						setScore(0);
 						setData([]);
 						setScores([]);
-						setTime(3000);
-						setButtonDisabled(true);
 					}}
 				>
 					Try Again
@@ -314,16 +303,21 @@ export const AnswerQuestions = ({ data, setQuizState, questionsAnswered, setQues
 	);
 };
 
-export const AskName = ({ name, setName, setQuizState, buttonDisabled, setButtonDisabled, time, setTime }) => {
+export const AskName = ({ name, setName, setQuizState, buttonDisabled, setQuestions, setScores }) => {
 	React.useEffect(
 		() => {
-			if (time === 0) {
-				setButtonDisabled(false);
-			}
-			const timer = time > 0 && setInterval(() => setTime(time - 10), 10);
-			return () => clearInterval(timer);
+			const fetchData = async () => {
+				const temp = await getQuestions();
+				setQuestions(temp);
+			};
+			const fetchScoreData = async () => {
+				const temp2 = await getTopTen();
+				setScores(temp2);
+			};
+			fetchData();
+			fetchScoreData();
 		},
-		[ time, setButtonDisabled, setTime ]
+		[ setQuestions, setScores ]
 	);
 	return (
 		<Container style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '80vh' }}>
