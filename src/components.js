@@ -1,6 +1,7 @@
 import React from 'react';
 import { Grid, TextField } from '@material-ui/core';
 import axios from 'axios';
+import { path } from 'ramda';
 
 import styled from 'styled-components';
 
@@ -30,7 +31,6 @@ export const StyledPoints = styled.div`
 `;
 
 export const StyledQuestion = styled.span`
-	font-size: 3rem;
 	padding-right: 3rem;
 	padding-left: 3rem;
 `;
@@ -39,7 +39,7 @@ export const StyledAnswer = styled.div`
 	display: flex;
 	justify-content: center;
 	align-items: center;
-	margin: 2rem;
+	margin: 2vh;
 	&:hover {
 		cursor: pointer;
 		transform: scale(1.03);
@@ -54,6 +54,10 @@ export const StyledScore = styled.div`
 	color: #1f4f79;
 `;
 
+/**
+ * component for creating the scoreboard
+ * @param topTen list of ten best players 
+ */
 const Scoreboard = ({ topTen }) => {
 	return (
 		<Container style={{ marginTop: '3rem' }}>
@@ -89,6 +93,17 @@ const Scoreboard = ({ topTen }) => {
 	);
 };
 
+/**
+ * the scoreboard page is created here
+ * @param scores top ten of scoreboard
+ * @param name name that was asked in the beginning
+ * @param setName function for setting name, in this case to empty string
+ * @param score the score that the player achieved
+ * @param setScore function for setting score, in this case to zero
+ * @param setQuizState function for handling state of the quiz: in this case the state is switched to askName where name of the player is asked
+ * @param setData function for handling questions: in this case an empty array is set as value of data
+ * @param setScores function for handling scoreboard's top ten. In this case an empty array is set as the value of 'scores'
+ */
 export const ShowScoreboard = ({ scores, name, setName, score, setScore, setQuizState, setData, setScores }) => {
 	const [ scoreData, setScoreData ] = React.useState([]);
 	// Get top 10 on scoreboard
@@ -158,8 +173,17 @@ export const ShowScoreboard = ({ scores, name, setName, score, setScore, setQuiz
 	);
 };
 
+/**
+ * 
+ * @param data list of questions
+ * @param setQuizState function for handling quiz state, here the quiz state is set to 'showScoreboard' after 10 questions have been answered
+ * @param questionsAnswered number of questions answered, values are from zero to ten
+ * @param setQuestionsAnswered function for handling the number of questions that have been answered
+ * @param score the score that the player achieved in the game
+ * @param setScore function for handling score
+ */
 export const AnswerQuestions = ({ data, setQuizState, questionsAnswered, setQuestionsAnswered, score, setScore }) => {
-	const [ timeLeft, setTimeLeft ] = React.useState(10000);
+	const [ timeLeft, setTimeLeft ] = React.useState(20000);
 	// When 10 questions are answered, switch to scoreboard
 	React.useEffect(
 		() => {
@@ -176,7 +200,7 @@ export const AnswerQuestions = ({ data, setQuizState, questionsAnswered, setQues
 			if (timeLeft === 0) {
 				setQuestionsAnswered(questionsAnswered + 1);
 				//getNextQuestion();
-				setTimeLeft(10000);
+				setTimeLeft(20000);
 			}
 			const timer = timeLeft > 0 && setInterval(() => setTimeLeft(timeLeft - 10), 10);
 			return () => clearInterval(timer);
@@ -190,7 +214,7 @@ export const AnswerQuestions = ({ data, setQuizState, questionsAnswered, setQues
 					<Item xs={10} style={{ display: 'flex', flexDirection: 'row', alignItems: 'center' }}>
 						<div
 							style={{
-								width: `${timeLeft / 10000 * 100}%`,
+								width: `${timeLeft / 20000 * 100}%`,
 								backgroundColor: '#1f4f79',
 								height: '4vh',
 								border: '0.5rem',
@@ -206,14 +230,23 @@ export const AnswerQuestions = ({ data, setQuizState, questionsAnswered, setQues
 			</Item>
 			<Item
 				xs={12}
-				style={{ paddingTop: '5rem', paddingBottom: '5rem', display: 'flex', justifyContent: 'center' }}
+				style={{ paddingTop: '5vh', paddingBottom: '5vh', display: 'flex', justifyContent: 'center' }}
 			>
-				<StyledQuestion>
-					{data && data[questionsAnswered] && data[questionsAnswered].question ? (
-						data[questionsAnswered].question
-					) : (
-						''
-					)}
+				<StyledQuestion
+					style={{
+						fontSize: `${path([ questionsAnswered, 'question' ], data) &&
+						path([ questionsAnswered, 'question' ], data).length > 60
+							? '1.5rem'
+							: path([ questionsAnswered, 'question' ], data) &&
+								path([ questionsAnswered, 'question' ], data).length > 40
+								? '2rem'
+								: path([ questionsAnswered, 'question' ], data) &&
+									path([ questionsAnswered, 'question' ], data).length > 30
+									? '2.5rem'
+									: '3rem'}`
+					}}
+				>
+					{path([ questionsAnswered, 'question' ], data) ? data[questionsAnswered].question : ''}
 				</StyledQuestion>
 			</Item>
 			<Item xs={12}>
@@ -227,16 +260,12 @@ export const AnswerQuestions = ({ data, setQuizState, questionsAnswered, setQues
 								!!data[questionsAnswered].correct_answer &&
 								data[questionsAnswered].answers[0] === data[questionsAnswered].correct_answer
 							) {
-								setScore(score + timeLeft / 100);
+								setScore(score + timeLeft / 200);
 							}
-							setTimeLeft(10000);
+							setTimeLeft(20000);
 						}}
 					>
-						{data && data[questionsAnswered] && data[questionsAnswered].answers[0] ? (
-							data[questionsAnswered].answers[0]
-						) : (
-							''
-						)}
+						{path([ questionsAnswered, 'answers', 0 ], data) ? data[questionsAnswered].answers[0] : ''}
 					</StyledAnswer>
 					<StyledAnswer
 						onClick={() => {
@@ -246,16 +275,12 @@ export const AnswerQuestions = ({ data, setQuizState, questionsAnswered, setQues
 								!!data[questionsAnswered].correct_answer &&
 								data[questionsAnswered].answers[1] === data[questionsAnswered].correct_answer
 							) {
-								setScore(score + timeLeft / 100);
+								setScore(score + timeLeft / 200);
 							}
-							setTimeLeft(10000);
+							setTimeLeft(20000);
 						}}
 					>
-						{data && data[questionsAnswered] && data[questionsAnswered].answers[1] ? (
-							data[questionsAnswered].answers[1]
-						) : (
-							''
-						)}
+						{path([ questionsAnswered, 'answers', 1 ], data) ? data[questionsAnswered].answers[1] : ''}
 					</StyledAnswer>
 				</Container>
 				<Container style={{ display: 'flex', justifyContent: 'space-around' }}>
@@ -267,16 +292,12 @@ export const AnswerQuestions = ({ data, setQuizState, questionsAnswered, setQues
 								!!data[questionsAnswered].correct_answer &&
 								data[questionsAnswered].answers[2] === data[questionsAnswered].correct_answer
 							) {
-								setScore(score + timeLeft / 100);
+								setScore(score + timeLeft / 200);
 							}
-							setTimeLeft(10000);
+							setTimeLeft(20000);
 						}}
 					>
-						{data && data[questionsAnswered] && data[questionsAnswered].answers[2] ? (
-							data[questionsAnswered].answers[2]
-						) : (
-							''
-						)}
+						{path([ questionsAnswered, 'answers', 2 ], data) ? data[questionsAnswered].answers[2] : ''}
 					</StyledAnswer>
 					<StyledAnswer
 						onClick={() => {
@@ -286,16 +307,12 @@ export const AnswerQuestions = ({ data, setQuizState, questionsAnswered, setQues
 								!!data[questionsAnswered].correct_answer &&
 								data[questionsAnswered].answers[3] === data[questionsAnswered].correct_answer
 							) {
-								setScore(score + timeLeft / 100);
+								setScore(score + timeLeft / 200);
 							}
-							setTimeLeft(10000);
+							setTimeLeft(20000);
 						}}
 					>
-						{data && data[questionsAnswered] && data[questionsAnswered].answers[3] ? (
-							data[questionsAnswered].answers[3]
-						) : (
-							''
-						)}
+						{path([ questionsAnswered, 'answers', 3 ], data) ? data[questionsAnswered].answers[3] : ''}
 					</StyledAnswer>
 				</Container>
 			</Item>
@@ -303,6 +320,15 @@ export const AnswerQuestions = ({ data, setQuizState, questionsAnswered, setQues
 	);
 };
 
+/**
+ * Component for rendering page to ask name of player
+ * @param name name of the player
+ * @param setName function for handling the name of the player
+ * @param setQuizState function for handling the state of the quiz, in this case the state is set to 'answerQuestions' after name has been submitted
+ * @param buttonDisabled boolean for deciding whether to let player submit his/her name. Questions are loaded when in this window and not having loaded the questiong when submitting would lead to an error
+ * @param setQuestions function for handling questions. when the questions have been loaded, they are set to variable named 'questions'
+ * @param setScores function for handling the scoreboard. Scoreboard is downloaded when in this screen and scores and names are set to variable 'scores' as list
+ */
 export const AskName = ({ name, setName, setQuizState, buttonDisabled, setQuestions, setScores }) => {
 	React.useEffect(
 		() => {

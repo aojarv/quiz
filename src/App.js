@@ -4,10 +4,15 @@ import { Grid } from '@material-ui/core';
 import styled from 'styled-components';
 import { AnswerQuestions, AskName, ShowScoreboard } from './components';
 
+// Component to create a MaterialUI grid container
 const Container = styled(({ ...other }) => <Grid container={true} {...other} />)``;
 
+// Component to create a MaterialUI grid item
 const Item = styled(({ ...other }) => <Grid item={true} {...other} />)``;
 
+/**
+ * the app itself: puts all three sections of the app together
+ */
 const App = () => {
 	// Possible values are askName, answerQuestions, showScoreboard
 	const [ quizState, setQuizState ] = React.useState('askName');
@@ -31,7 +36,8 @@ const App = () => {
 					xs={8}
 					style={{
 						backgroundColor: '#e0dede',
-						height: '80vh'
+						height: '80vh',
+						minHeight: '200px'
 					}}
 				>
 					{/**
