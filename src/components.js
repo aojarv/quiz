@@ -111,7 +111,7 @@ export const ShowScoreboard = ({ scores, name, setName, score, setScore, setQuiz
 		() => {
 			setScoreData(scores);
 			const fetchData = async () => {
-				const url = 'http://oop-harkka.herokuapp.com/api/addscore';
+				const url = 'https://oop-harkka.herokuapp.com/api/addscore';
 				const temp = await axios.post(url, { name: name, score: score.toFixed(2) }).then((res) => {
 					return res.data;
 				});
